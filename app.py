@@ -233,16 +233,25 @@ if to_file and cc_file:
                         
                     col_offset = 0
                     
+                    # Validación y registro para TR - ET
                     if pano_tr and pano_et:
                         diff_tr_et = mins.get(pano_tr, np.inf) - mins.get(pano_et, np.inf)
                         cell_tr = ws.cell(row=r, column=tp_start_col + col_offset)
                         cell_tr.value = diff_tr_et if not np.isinf(diff_tr_et) else "--"
+                        
+                        if not np.isinf(diff_tr_et) and diff_tr_et < 0.3:
+                            observaciones.append(f"En {falla_actual}, no se cumple el tiempo de paso (< 300 ms) entre {pano_tr} y {pano_et}.")
+                            
                         col_offset += 1
                         
+                    # Validación y registro para ET - Alimentadores/Bancos
                     for idx, f_code in enumerate(feeders_tp):
                         diff = mins.get(pano_et, np.inf) - mins.get(f_code, np.inf)
                         cell_f = ws.cell(row=r, column=tp_start_col + col_offset + idx)
                         cell_f.value = diff if not np.isinf(diff) else "--"
+                        
+                        if not np.isinf(diff) and diff < 0.3:
+                            observaciones.append(f"En {falla_actual}, no se cumple el tiempo de paso (< 300 ms) entre {pano_et} y {f_code}.")
             
             for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=max_excel_col):
                 for cell in row:
